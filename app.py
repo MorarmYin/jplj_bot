@@ -4,6 +4,8 @@ from io import BytesIO
 import threading
 import signal
 import sys
+
+import requests
 from database import open_database, close_database
 from get_at_thread import start_get_at
 

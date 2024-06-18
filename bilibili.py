@@ -1,16 +1,16 @@
 import requests
 import time
 from utils import contains_substring
-from database import check_id_exists, insert_data
+from database import check_id_exists, delete_row_by_id, insert_at_data, insert_at_id
+import config
 
 def get_at(conn, cur):
-    cookie = {}  # 设置cookie,填自己账号的
     while True:
         print("开始查询")
         time.sleep(15)
         num = 0
         response = requests.get(
-            "https://api.bilibili.com/x/msgfeed/at?build=0&mobi_app=web", headers=cookie)
+            "https://api.bilibili.com/x/msgfeed/at?build=0&mobi_app=web", headers=config.cookie)
         data = response.json()
 
         if data['code'] == 0:
@@ -25,39 +25,47 @@ def get_at(conn, cur):
                 item_title = item['item']['title']
                 item_uri = item['item']['uri']
                 item_source_content = item['item']['source_content']
-                item_target_id = item['item']['target_id']
-
+                business_id= item['item']['business_id']
+                at_time = item['at_time']
                 print(f"{user_nickname}艾特了机器人")
 
                 if item_source_content == "":
                     print("这个数组的内容是空的(?),重新查询")
                     get_at(conn, cur)
 
-                if check_id_exists(cur, 'id', item_id):
+                if check_id_exists(cur, 'at_id', 'id', item_id):
                     print("因为数据存在,所以重新查询")
                     get_at(conn, cur)
 
+                insert_at_id(conn, cur, item)
                 print("这条数据不在数据库,继续执行")
 
-                if item_target_id != 0:
-                    at_content_end = item_title
-                else:
-                    at_content_end = item_source_content
-
-                if contains_substring(at_content_end, '交卷'):
+                if business_id == 1 and contains_substring(item_source_content, '交卷'):
                     reply_type = item['item']['business_id']
                     oid = item['item']['subject_id']
                     root = item['item']['source_id']
                     at_content_name = user_nickname
 
-                    if check_id_exists(cur, 'item_uri', item_uri):
+                    if check_id_exists(cur, 'bilibili_items', 'item_uri', item_uri):
                         reply_content = "交卷收到！已有人提交过此视频！"
                     else:
                         reply_content = f"视频交卷成功！视频名称：{item_title}，提交人：{at_content_name}"
-                        insert_data(conn, cur, item)
+                        bvid = item["item"]["uri"].split("/")[-1]
+                        time.sleep(1)
+                        video_response = requests.get('https://api.bilibili.com/x/web-interface/view', params={'bvid': bvid},headers=config.cookie)
+                        video_data = video_response.json()
+                        if video_data['code'] == 0:
+                            video_item = video_data['data']
+                            insert_at_data(conn, cur, item, video_item)
+                        else:
+                            print("获取视频信息失败")
+                            delete_row_by_id(conn, cur, item)
+                            get_at(conn, cur)
 
-                    if send_reply(reply_type, oid, root, reply_content, cookie) != 0:
+                    if send_reply(reply_type, oid, root, reply_content, config.cookie) != 0:
+                    #if 0 != 0: #测试用
                         print("发送消息失败")
+                        delete_row_by_id(conn, cur, item)
                         get_at(conn, cur)
 
                 else:
@@ -77,8 +85,7 @@ def send_reply(reply_type, oid, root, reply_content, cookie):
         "plat": "1",
         "ordering": "time",
         "jsonp": "jsonp",
-        "csrf": '4960dbdee2b87a4c8e7b6add2fdc4f31'
+        "csrf": config.csrf
     }
-    time.sleep(1)
     response = requests.post("https://api.bilibili.com/x/v2/reply/add", headers=cookie, data=reply_data)
     return response.json()['code']

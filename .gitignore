@@ -1,1 +1,5 @@
-_pycache_/
+# Ignore pycache folder
+__pycache__/
+
+# Ignore config1.py file
+config1.py
