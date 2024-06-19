@@ -51,8 +51,11 @@ footer {
 
 .waterfall-container .card {
     background-color: #fff;
-    width: 300px;
-    margin: 10px;
+    display: grid;
+    grid-gap: 20px; /* 控制卡片之间的间隔 */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    padding: 20px; /* 根据需要调整内边距 */
+    margin: 10px; 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;

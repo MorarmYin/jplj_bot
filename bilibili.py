@@ -9,17 +9,13 @@ def get_at(conn, cur):
     while True:
         print("开始查询")
         time.sleep(15)
-        num = 0
         response = requests.get(
             "https://api.bilibili.com/x/msgfeed/at?build=0&mobi_app=web", headers=config.cookie)
         data = response.json()
-
         if data['code'] == 0:
             print("连接api成功！")
             items = data['data']['items']
-            items_length = len(items)
-            while num < items_length:
-                item = items[num]
+            for item in items:
                 user_nickname = item['user']['nickname']
                 item_id = item['id']
                 item_type = item['item']['type']
@@ -32,11 +28,11 @@ def get_at(conn, cur):
 
                 if item_source_content == "":
                     print("这个数组的内容是空的(?),重新查询")
-                    get_at(conn, cur)
+                    break
 
                 if check_id_exists(cur, 'at_id', 'id', item_id):
                     print("因为数据存在,所以重新查询")
-                    get_at(conn, cur)
+                    break
 
                 insert_at_id(conn, cur, item)
                 print("这条数据不在数据库,继续执行")
@@ -58,22 +54,25 @@ def get_at(conn, cur):
                         if video_data['code'] == 0:
                             video_item = video_data['data']
                             insert_at_data(conn, cur, item, video_item)
-                            get_imgs(item, video_item)
+                            if get_imgs(item, video_item) == 0:
+                                print("图片下载成功")
+                            else:
+                                print("图片下载失败")
+                                delete_row_by_id(conn, cur, item)
+                                break
                         else:
                             print("获取视频信息失败")
                             delete_row_by_id(conn, cur, item)
-                            get_at(conn, cur)
+                            break
 
                     #if send_reply(reply_type, oid, root, reply_content, config.cookie) != 0:
                     if 0 != 0: #测试用
                         print("发送消息失败")
                         delete_row_by_id(conn, cur, item)
-                        get_at(conn, cur)
+                        break
 
                 else:
                     print("这个数组的内容不是交卷,继续查询")
-
-                num += 1
         else:
             print("连接api失败，请检查cookie")
 
@@ -93,19 +92,21 @@ def send_reply(reply_type, oid, root, reply_content, cookie):
     return response.json()['code']
 
 def get_imgs(item, video_item):
-    v_img = video_item['pic']
-    img_response = requests.get(v_img, headers=config.cookie)
-    with open(f"imgs/videos/{video_item['bvid']}.jpg", "wb") as f:
-        f.write(img_response.content)
-        f.close()
-    at_icon_img = item['user']['avatar']
-    at_icon_img_response = requests.get(at_icon_img, headers=config.cookie)
-    with open(f"imgs/at/{item['user']['mid']}.jpg", "wb") as f:
-        f.write(at_icon_img_response.content)
-        f.close()
-    owner_icon_img = video_item['owner']['face']
-    owner_icon_img_response = requests.get(owner_icon_img, headers=config.cookie)
-    with open(f"imgs/owner/{video_item['owner']['mid']}.jpg", "wb") as f:
-        f.write(owner_icon_img_response.content)
-        f.close()
-    print("图片下载成功")
+    try:
+        v_img = video_item['pic']
+        img_response = requests.get(v_img, headers=config.cookie)
+        with open(f"imgs/videos/{video_item['bvid']}.jpg", "wb") as f:
+            f.write(img_response.content)
+        
+        at_icon_img = item['user']['avatar']
+        at_icon_img_response = requests.get(at_icon_img, headers=config.cookie)
+        with open(f"imgs/at/{item['user']['mid']}.jpg", "wb") as f:
+            f.write(at_icon_img_response.content)
+        
+        owner_icon_img = video_item['owner']['face']
+        owner_icon_img_response = requests.get(owner_icon_img, headers=config.cookie)
+        with open(f"imgs/owner/{video_item['owner']['mid']}.jpg", "wb") as f:
+            f.write(owner_icon_img_response.content)
+        return 0  # 图片下载成功
+    except Exception as e:
+        return 1  # 下载失败
