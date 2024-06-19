@@ -1,5 +1,6 @@
 # Ignore pycache folder
 __pycache__/
-
+imgs/
 # Ignore config1.py file
 config1.py
+BilibiliData.db

@@ -1,0 +1,109 @@
+body {
+    padding-top: 80px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-custom {
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+}
+
+.table-custom {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+}
+
+.table-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.table-custom td {
+    vertical-align: middle;
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    background-color: #f1f1f1;
+}
+
+/* Waterfall flow styles */
+.waterfall-container {
+    display: none;
+    /* Hide by default */
+    padding: 20px;
+}
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-link:hover .card {
+    background-color: #f8f9fa;
+}
+
+.waterfall-container .card {
+    background-color: #fff;
+    width: 300px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.waterfall-container .card img {
+    width: 100%;
+    height: auto;
+}
+
+.waterfall-container .card .info {
+    padding: 15px;
+}
+
+.waterfall-container .card .info h4 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+.waterfall-container .card .info p {
+    margin: 0;
+    color: #777;
+}
+
+.waterfall-container .card .info .up {
+    color: #999;
+    font-size: 14px;
+}
+
+.pagination {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    margin: 0 5px;
+    padding: 8px 16px;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    border-radius: 4px;
+}
+
+.pagination a.active {
+    background-color: #333;
+    color: #fff;
+    border: 1px solid #333;
+}
+
+.pagination a:hover {
+    background-color: #ddd;
+}

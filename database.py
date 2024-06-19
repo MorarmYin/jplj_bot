@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 def open_database(path):
     connection = sqlite3.connect(path)
@@ -43,8 +43,8 @@ def delete_row_by_id(conn, cur, item):
     conn.commit()
 
 def insert_at_data(conn, cur, item, video_item):
-    at_time = datetime.fromtimestamp(item["at_time"], tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-    pass_time = datetime.fromtimestamp(video_item["ctime"], tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+    at_time = datetime.fromtimestamp(item["at_time"], tz=timezone.utc).astimezone(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
+    pass_time = datetime.fromtimestamp(video_item["ctime"], tz=timezone.utc).astimezone(timezone(timedelta(hours=8))).strftime('%Y-%m-%d %H:%M:%S')
     cur.execute('''
         INSERT INTO bilibili_items (id, at_time, at_user_id, at_user_nickname, item_title, item_uri, BVID, owner_id, owner_nickname, pass_time)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

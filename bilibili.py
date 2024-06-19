@@ -3,6 +3,7 @@ import time
 from utils import contains_substring
 from database import check_id_exists, delete_row_by_id, insert_at_data, insert_at_id
 import config
+import os
 
 def get_at(conn, cur):
     while True:
@@ -57,13 +58,14 @@ def get_at(conn, cur):
                         if video_data['code'] == 0:
                             video_item = video_data['data']
                             insert_at_data(conn, cur, item, video_item)
+                            get_imgs(item, video_item)
                         else:
                             print("获取视频信息失败")
                             delete_row_by_id(conn, cur, item)
                             get_at(conn, cur)
 
-                    if send_reply(reply_type, oid, root, reply_content, config.cookie) != 0:
-                    #if 0 != 0: #测试用
+                    #if send_reply(reply_type, oid, root, reply_content, config.cookie) != 0:
+                    if 0 != 0: #测试用
                         print("发送消息失败")
                         delete_row_by_id(conn, cur, item)
                         get_at(conn, cur)
@@ -89,3 +91,21 @@ def send_reply(reply_type, oid, root, reply_content, cookie):
     }
     response = requests.post("https://api.bilibili.com/x/v2/reply/add", headers=cookie, data=reply_data)
     return response.json()['code']
+
+def get_imgs(item, video_item):
+    v_img = video_item['pic']
+    img_response = requests.get(v_img, headers=config.cookie)
+    with open(f"imgs/videos/{video_item['bvid']}.jpg", "wb") as f:
+        f.write(img_response.content)
+        f.close()
+    at_icon_img = item['user']['avatar']
+    at_icon_img_response = requests.get(at_icon_img, headers=config.cookie)
+    with open(f"imgs/at/{item['user']['mid']}.jpg", "wb") as f:
+        f.write(at_icon_img_response.content)
+        f.close()
+    owner_icon_img = video_item['owner']['face']
+    owner_icon_img_response = requests.get(owner_icon_img, headers=config.cookie)
+    with open(f"imgs/owner/{video_item['owner']['mid']}.jpg", "wb") as f:
+        f.write(owner_icon_img_response.content)
+        f.close()
+    print("图片下载成功")
